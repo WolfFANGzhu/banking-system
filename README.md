@@ -3,10 +3,11 @@
 - A bank building with multiple floors (number of floors can be specified)
 - Multiple bank teller counters or service desks on each floor
 - Customer waiting areas or queues near each service desk
-- 2 or more bank elevators for vertical transportation within the building (should be coordinated)
-- Interfaces for customers and employees:
-  - Customer interfaces: ATM machines, digital kiosks, and/or mobile banking apps
-  - Employee interfaces: Banking software terminals or workstations
+- Employee workstations equipped with necessary banking software
+- Customer interfaces:
+  - ATM machines for cash withdrawals and deposits
+  - Digital kiosks for account inquiries and transactions
+  - Mobile banking apps for remote account management
 - Security features:
   - Surveillance cameras in key areas of the building
   - Access control systems for restricted areas
