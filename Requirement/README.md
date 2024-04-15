@@ -52,6 +52,3 @@
 - The system shall be compatible with various banking APIs and protocols for seamless integration with external systems such as payment gateways and banking networks.
 - The system shall be scalable to accommodate future enhancements and updates, including support for new banking services and technologies.
 
-**Performance and Reliability:**
-- The system shall be designed to handle a large volume of concurrent users and transactions without performance degradation.
-- The system shall have backup and recovery mechanisms to ensure data integrity and system availability in case of failures or disasters.
