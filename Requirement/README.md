@@ -16,6 +16,7 @@
 - The system shall support transactions such as balance inquiry, fund transfers, and password/PIN changes for users.
 - Users shall be able to check their account balance through the system.
 - Users shall be able to transfer funds between their own accounts or to other accounts within the same bank.
+- Users shall have the ability to change their password or PIN for security purposes.
 
 **Security Features:**
 - The system shall implement access control mechanisms to ensure that only authorized users can access sensitive functionalities.
@@ -30,18 +31,6 @@
 **Performance and Reliability:**
 - The system shall be designed to handle a large volume of concurrent users and transactions without performance degradation.
 - The system shall have backup and recovery mechanisms to ensure data integrity and system availability in case of failures or disasters.
-
-**Transaction Processing:**
-- The system shall support transactions such as balance inquiry, fund transfers, and password/PIN changes for users.
-- Users shall be able to check their account balance through the system.
-- Users shall be able to transfer funds between their own accounts or to other accounts within the same bank.
-- Users shall have the ability to change their password or PIN for security purposes.
-
-**Security Features:**
-- The system shall implement access control mechanisms to ensure that only authorized users can access sensitive functionalities.
-- User passwords and PINs shall be securely encrypted and stored in the database.
-- The system shall log all user activities, including login/logout events, transaction details, and security-related events for auditing purposes.
-- The system shall have built-in mechanisms to detect and prevent unauthorized access attempts.
 
 **Reporting and Analytics:**
 - The system shall provide users with the ability to view reports related to their account activities, such as transaction history and account statements.
