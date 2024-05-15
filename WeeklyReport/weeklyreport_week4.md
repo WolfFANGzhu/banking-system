@@ -2,7 +2,7 @@
 
 ## Use case diagram
 
-![photo](BankSysUseCase.png)
+![photo](../Requirement/BankSysUseCase.png)
 
 ## Basic requirement 
 

@@ -62,5 +62,133 @@ As shown in Figure \ref{fig:usecase}, the banking system allows users and admins
     \label{fig:classdiagram}
 \end{figure}
 
-As shown in Figure \ref{fig:classdiagram}, the image is included and captioned correctly.
+As shown in Figure \ref{fig:classdiagram}, subclasses APP and ATM under BankingSystem are responsible for implementing basic functions, the UI class handles interface presentation and input processing, and the Database class stores accounts and their associated transaction information.
+\newpage
+
+\section{Functional Boundaries and Limitations}
+\subsection{ATM Functionality}
+
+\begin{enumerate}
+    \item \textbf{create\_account@password}
+        \begin{itemize}
+
+            \item Constraint1: Account IDs should consist of 10 digits.
+            \item Constraint2: No duplicate account IDs or usernames.
+            \item Constraint3: Password length and complexity (e.g., Way 1. minimum of 8 characters, including uppercase letters, lowercase letters, and numbers. Way 2. consist of exactly 6 digits).
+        \end{itemize}
+        
+    \item \textbf{close\_account}
+        \begin{itemize}
+            \item Constraint1: Ensure the account balance is zero before closing the account.
+            \item Constraint2*: User identity verification (e.g., through password) should be performed before closing the account. 
+            \item Constraint3: The account must not be logged in on the app.
+        \end{itemize}
+        
+    \item \textbf{insert\_card@id}
+        \begin{itemize}
+            \item Constraint1: Validity and existence of the account IDs.
+            \item Constraint2*: Check if the card is blacklisted or frozen.
+        \end{itemize}
+        
+    \item \textbf{return\_card}
+        \begin{itemize}
+            \item Constraint1*: Check for any unfinished transactions at APP before the card is returned.
+            \item Constraint2: Ensure the card has been inserted in ATM before returning.
+        \end{itemize}
+        
+    \item \textbf{deposit\_cash@num}
+        \begin{itemize}
+            \item Constraint1: Minimum and maximum values for the deposit amount (e.g $ \$0.01\sim \$50000.00$).
+            \item Constraint2*: Check if the cash capacity of the ATM is sufficient to store the new cash.
+            \item Constraint3*: Check for any unfinished transactions at APP before the card is returned.
+            \item Constraint4: Update the database.
+        \end{itemize}
+        
+    \item \textbf{withdraw\_cash@num@password}
+        \begin{itemize}
+            \item Constraint1: Sufficient account balance for withdrawal.
+            \item Constraint2: Password verification.
+            \item Constraint3*: Availability of cash inventory in the ATM.
+            \item Constraint4*: Check for any unfinished transactions at APP before the card is returned.
+            \item Constraint5: Update the database.
+        \end{itemize}
+\end{enumerate}
+
+\subsection{APP Functionality}
+
+\begin{enumerate}
+    \item \textbf{log\_in@id@password\#app\_id}
+        \begin{itemize}
+            \item Constraint1: Correct format for account ID, password and app ID.
+            \item Constraint2: The app to log in is opened.
+            \item Constraint3.1*: If login fails, repeatedly request the correct ID and password.
+            \item Constraint3.2*: Limit on the number of login attempts (to prevent brute-force attacks), multi-factor authentication.
+        \end{itemize}
+        
+    \item \textbf{log\_out\#app\_id}
+        \begin{itemize}
+            \item Constraint1: Check if the user is logged in.
+            \item Constraint2: Correct format for app ID.
+            \item Constraint3*: Ensure all unsaved data is saved before logout.
+        \end{itemize}
+        
+    \item \textbf{close\_app\#app\_id}
+        \begin{itemize}
+            \item Constraint1: Correct format for app ID.
+            \item Constraint2: Check if the application is in use (e.g log out the using account).
+            \item Constraint3*: Ensure all unsaved data is saved before closing.
+        \end{itemize}
+\end{enumerate}
+
+\subsection{Both (Shared Functionality)}
+
+\begin{enumerate}
+    \item \textbf{change\_password@new\_password(\#app\_id)}
+        \begin{itemize}
+            \item Constraint1: Correct format for the new password and app ID.
+            \item Constraint2: Avoid using the old password as the new password, multi-factor authentication.
+            \item Constraint3: The state of account should be logged in APP or inserted-card in ATM.
+            \item Constraint4: Update the database.
+        \end{itemize}
+        
+    \item \textbf{transfer\_money@receiver\_id@num(\#app\_id)}
+        \begin{itemize}
+            \item Constraint1: Minimum and maximum values for the transfer amount (e.g $ \$0.01\sim \$50000.00$).
+            \item Constraint2: Valid state of account and correct format for the app ID and account ID.
+            \item Constraint3: Ensure sufficient account balance, validity of the receiver's account, prevent duplicate transfers.
+            \item Constraint4: Update the database.
+        \end{itemize}
+        
+    \item \textbf{query(\#app\_id)}
+        \begin{itemize}
+            \item Constraint1*: Limit on query frequency (to prevent excessive querying).
+            \item Constraint2: Valid state of account and correct format for the app ID and account ID.
+            \item Constraint3: Get the account's balance, transaction log and *password.
+        \end{itemize}
+\end{enumerate}
+
+\subsection{other}
+\begin{enumerate}
+    \item \textbf{open\_app}
+        \begin{itemize}
+            \item Constraint1: open the ${i+1}_{th}$ APP, where the i is the num of APP opened 
+        \end{itemize}
+    \item \textbf{reset}
+        \begin{itemize}
+            \item Constraint1: Only need to delete all the data stored in database.
+        \end{itemize}
+\end{enumerate}
+
+\subsection{Failure Cases (Errors)}
+
+Consider the following tests when operations above fail:
+\begin{itemize}
+    \item Provide clear error messages to help users understand the issue.
+    \item *Ensure system consistency after the error occurs (e.g., transaction rollback).
+    \item *Log all failed attempts for future analysis and improvement.
+\end{itemize}
+NOTE : (* represents the optimal functional limitation we could consider later.)
+
+
+
 \end{document}
