@@ -23,7 +23,7 @@ def is_received_new_message(oldTimeStamp:int, oldServerMessage:str, Msgunprocess
 if __name__=='__main__':
 
     ############ Connect the Server ############
-    identity = "Team15" #write your team name here.
+    identity = "TeamX" #write your team name here.
     zmqThread = NetClient.ZmqClientThread(identity=identity)
 
 
@@ -42,9 +42,7 @@ if __name__=='__main__':
                 timeStamp = zmqThread.messageTimeStamp
                 serverMessage = zmqThread.receivedMessage
             messageUnprocessed = False
-            # team15:we should build general cases here and map each msg into the function that we need to build first
-            # team15:the code like 'zmqThread.sendMsg("account_created@" + card_id)' is event msg helping us to test the function
-            # team15:reset , removeAccount , addTransaction,closeAccount does not have example below  
+
             if(serverMessage == "create_account@123456"):
                 card_id = ''.join([str(random.randint(0, 9)) for _ in range(10)])
                 zmqThread.sendMsg("account_created@" + card_id)
