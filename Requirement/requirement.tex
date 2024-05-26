@@ -57,7 +57,7 @@ As shown in Figure \ref{fig:usecase}, the banking system allows users and admins
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\linewidth]{WeeklyReport/class_diagram.png}
+    \includegraphics[width=\linewidth]{WeeklyReport/Class_Diagram1.jpg}
     \caption{Basic class diagram of banking system }
     \label{fig:classdiagram}
 \end{figure}
@@ -69,113 +69,124 @@ As shown in Figure \ref{fig:classdiagram}, subclasses APP and ATM under BankingS
 \subsection{ATM Functionality}
 
 \begin{enumerate}
-    \item \textbf{create\_account@password}
+    \item \textbf{create\_account@account\_id@password}
         \begin{itemize}
 
-            \item Constraint1: Account IDs should consist of 10 digits.
+            \item Constraint1: Account IDs should consist of 10 pure digits.
             \item Constraint2: No duplicate account IDs or usernames.
-            \item Constraint3: Password length and complexity (e.g., Way 1. minimum of 8 characters, including uppercase letters, lowercase letters, and numbers. Way 2. consist of exactly 6 digits).
+            \item Constraint3: Password length and complexity: minimum of 8 characters, including uppercase letters, lowercase letters, and numbers.
+            \item Constraint4: Sufficient processing time.
         \end{itemize}
         
-    \item \textbf{close\_account}
+    \item \textbf{cancel\_account}
         \begin{itemize}
             \item Constraint1: Ensure the account balance is zero before closing the account.
-            \item Constraint2*: User identity verification (e.g., through password) should be performed before closing the account. 
-            \item Constraint3: The account must not be logged in on the app.
+            \item Constraint2: The account must not be logged in on the app.
+            \item Constraint3: Sufficient processing time.
         \end{itemize}
         
-    \item \textbf{insert\_card@id}
+    \item \textbf{insert\_card@account\_id@password}
         \begin{itemize}
-            \item Constraint1: Validity and existence of the account IDs.
-            \item Constraint2*: Check if the card is blacklisted or frozen.
+            \item Constraint1: Validity and existence of the account IDs and correctness of password.
+            \item Constraint2: Sufficient processing time.
         \end{itemize}
         
     \item \textbf{return\_card}
         \begin{itemize}
-            \item Constraint1*: Check for any unfinished transactions at APP before the card is returned.
-            \item Constraint2: Ensure the card has been inserted in ATM before returning.
+            \item Constraint1: Ensure the card has been inserted in ATM before returning.
+            \item Constraint2: Check that no other operations are taking place in ATM.
+            \item Constraint3: Sufficient processing time.
         \end{itemize}
         
-    \item \textbf{deposit\_cash@num}
+    \item \textbf{deposit\_cash@amount}
         \begin{itemize}
-            \item Constraint1: Minimum and maximum values for the deposit amount (e.g $ \$0.01\sim \$50000.00$).
-            \item Constraint2*: Check if the cash capacity of the ATM is sufficient to store the new cash.
-            \item Constraint3*: Check for any unfinished transactions at APP before the card is returned.
+            \item Constraint1: Minimum and maximum values for the deposit amount ($0.00<= \&\& <=50000.00$).
+            \item Constraint2: Check that no other operations are taking place in ATM.
+            \item Constraint3: Check for any unfinished transactions at APP before the card is returned.
             \item Constraint4: Update the database.
+            \item Constraint5: Sufficient processing time.
         \end{itemize}
         
-    \item \textbf{withdraw\_cash@num@password}
+    \item \textbf{withdraw\_cash@amount}
         \begin{itemize}
-            \item Constraint1: Sufficient account balance for withdrawal.
-            \item Constraint2: Password verification.
-            \item Constraint3*: Availability of cash inventory in the ATM.
-            \item Constraint4*: Check for any unfinished transactions at APP before the card is returned.
+            \item Constraint1: Minimum and maximum values for the withdraw amount ($0.00<= \&\& <=50000.00$).
+            \item Constraint2: Sufficient account balance for withdrawal.
+            \item Constraint3: Check that no other operations are taking place in ATM.
+            \item Constraint4: Check for any unfinished transactions at APP before the card is returned.
             \item Constraint5: Update the database.
+            \item Constraint6: Sufficient processing time.
         \end{itemize}
 \end{enumerate}
 
 \subsection{APP Functionality}
-
 \begin{enumerate}
-    \item \textbf{log\_in@id@password\#app\_id}
+    \item \textbf{log\_in@account\_id@password}
         \begin{itemize}
-            \item Constraint1: Correct format for account ID, password and app ID.
+            \item Constraint1: Validity and existence of the account IDs and correctness of password.
             \item Constraint2: The app to log in is opened.
-            \item Constraint3.1*: If login fails, repeatedly request the correct ID and password.
-            \item Constraint3.2*: Limit on the number of login attempts (to prevent brute-force attacks), multi-factor authentication.
+            \item Constraint3: One account can only be logged into one APP.
+            \item Constraint5: Sufficient processing time.
         \end{itemize}
         
-    \item \textbf{log\_out\#app\_id}
+    \item \textbf{log\_out}
         \begin{itemize}
             \item Constraint1: Check if the user is logged in.
-            \item Constraint2: Correct format for app ID.
-            \item Constraint3*: Ensure all unsaved data is saved before logout.
+            \item Constraint2: Check that no other operations are taking place in APP.
+             \item Constraint3: Sufficient processing time.
         \end{itemize}
         
-    \item \textbf{close\_app\#app\_id}
-        \begin{itemize}
-            \item Constraint1: Correct format for app ID.
-            \item Constraint2: Check if the application is in use (e.g log out the using account).
-            \item Constraint3*: Ensure all unsaved data is saved before closing.
-        \end{itemize}
 \end{enumerate}
 
 \subsection{Both (Shared Functionality)}
-
 \begin{enumerate}
-    \item \textbf{change\_password@new\_password(\#app\_id)}
+    \item \textbf{change\_password@new\_password}
         \begin{itemize}
-            \item Constraint1: Correct format for the new password and app ID.
+            \item Constraint1: Correct format for the new password 
             \item Constraint2: Avoid using the old password as the new password, multi-factor authentication.
             \item Constraint3: The state of account should be logged in APP or inserted-card in ATM.
             \item Constraint4: Update the database.
+            \item Constraint5: In the same UI, make sure there are no other actions performed, and in different UI, make sure there are no other actions related to the transaction.
+            \item Constraint6: Sufficient processing time.
         \end{itemize}
-        
-    \item \textbf{transfer\_money@receiver\_id@num(\#app\_id)}
+
+
+    \item \textbf{transfer\_money@receiver\_id@amount)}
         \begin{itemize}
-            \item Constraint1: Minimum and maximum values for the transfer amount (e.g $ \$0.01\sim \$50000.00$).
-            \item Constraint2: Valid state of account and correct format for the app ID and account ID.
-            \item Constraint3: Ensure sufficient account balance, validity of the receiver's account, prevent duplicate transfers.
+            \item Constraint1: Minimum and maximum values for the transfer amount ($0.00<= \&\& <=50000.00$).
+            \item Constraint2: Validity and existence of the receiver\_id.
+            \item Constraint3: Ensure sufficient account balance, prevent duplicate transfers.
             \item Constraint4: Update the database.
+            \item Constraint5: In the same UI, make sure there are no other actions performed, and in different UI, make sure there are no other actions related to the transaction.
+            \item Constraint6: Sufficient processing time.
         \end{itemize}
         
-    \item \textbf{query(\#app\_id)}
+    \item \textbf{query}
         \begin{itemize}
-            \item Constraint1*: Limit on query frequency (to prevent excessive querying).
-            \item Constraint2: Valid state of account and correct format for the app ID and account ID.
-            \item Constraint3: Get the account's balance, transaction log and *password.
+            \item Constraint1: The state of account should be logged in APP or inserted-card in ATM.
+            \item Constraint2: Show the account's balance, transaction logs(including, Transaction Time, Transaction Type, Amount, Start Balance, End Balance) and password.
+            \item Constraint3: Check that no other operations are taking place.
+            \item Constraint4: Sufficient processing time.
+        \end{itemize}
+    \item \textbf{back}
+            \begin{itemize}
+            \item Constraint1: Return to the initial page
         \end{itemize}
 \end{enumerate}
 
-\subsection{other}
+\subsection{Controller Functionality}
 \begin{enumerate}
-    \item \textbf{open\_app}
+    \item \textbf{open\_app@app\_id}
         \begin{itemize}
-            \item Constraint1: open the ${i+1}_{th}$ APP, where the i is the num of APP opened 
+            \item Constraint1: The app\_id must be a positive integer $1<=\&\&<=99$ and must not duplicate the app\_id of an open APP.
+            \item Constraint2: open the ${i+1}_{th}$ APP, where the i is the num of APP opened. 
+        \end{itemize}
+    \item \textbf{close\_app@app\_id}
+        \begin{itemize}
+            \item Constraint1: The app\_id must be a positive integer $1<=\&\&<=99$ and the corresponding APP must already be open.
         \end{itemize}
     \item \textbf{reset}
         \begin{itemize}
-            \item Constraint1: Only need to delete all the data stored in database.
+            \item Constraint1: Delete all the data stored in database.
         \end{itemize}
 \end{enumerate}
 
@@ -183,12 +194,8 @@ As shown in Figure \ref{fig:classdiagram}, subclasses APP and ATM under BankingS
 
 Consider the following tests when operations above fail:
 \begin{itemize}
-    \item Provide clear error messages to help users understand the issue.
-    \item *Ensure system consistency after the error occurs (e.g., transaction rollback).
-    \item *Log all failed attempts for future analysis and improvement.
+    \item Provide clear and correctly corresponding error messages to help users understand the issue.
+    \item Ensure system consistency after the error occurs (e.g., transaction rollback).
 \end{itemize}
-NOTE : (* represents the optimal functional limitation we could consider later.)
-
-
 
 \end{document}
