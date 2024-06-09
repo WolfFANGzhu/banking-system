@@ -2,10 +2,13 @@ from PyQt5.QtWidgets import QWidget, QMainWindow, QLabel, QPushButton, QMessageB
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QFont
 import sys
+import os
 import APP_UI
 import NetClient
 import ATM_UI
 import sqlite3
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from backend.bank import reset_database
 
 class Controller(QMainWindow):
     operationInProgress = pyqtSignal(int, bool)  # Signal with account ID and operation status
@@ -154,7 +157,7 @@ class Controller(QMainWindow):
                 app_instance.log_out()
 
     def handle_password_changed_app(self, account_id):
-        if int(self.atm.current_account_id) == account_id:
+        if self.atm.current_account_id is not None and int(self.atm.current_account_id) == account_id:
             self.atm.return_card()
 
     def handle_balance_changed_atm(self, account_id):
@@ -163,7 +166,7 @@ class Controller(QMainWindow):
                 app_instance.update_account_info()
 
     def handle_balance_changed_app(self, account_id):
-        if int(self.atm.current_account_id) == account_id:
+        if self.atm.current_account_id is not None and int(self.atm.current_account_id) == account_id:
             self.atm.update_account_info()
 
     def handle_transfer_changed_atm(self, account_id):
@@ -172,7 +175,7 @@ class Controller(QMainWindow):
                 app_instance.update_account_info()
 
     def handle_transfer_changed_app(self, account_id):
-        if int(self.atm.current_account_id) == account_id:
+        if self.atm.current_account_id is not None and int(self.atm.current_account_id) == account_id:
             self.atm.update_account_info()
 
     def reset(self):
@@ -181,45 +184,6 @@ class Controller(QMainWindow):
             reset_database()
             QMessageBox.information(self, 'Success', 'Database has been reset.')
     
-
-def initialize_database():
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS accounts (
-        id TEXT PRIMARY KEY,
-        password TEXT NOT NULL,
-        balance REAL NOT NULL
-    )
-    ''')
-    
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        account_id TEXT NOT NULL,
-        type TEXT NOT NULL,
-        amount REAL NOT NULL,
-        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        starting_balance REAL NOT NULL,
-        ending_balance REAL NOT NULL
-    )
-    ''')
-    
-    conn.commit()
-    conn.close()
-
-def reset_database():
-    conn = sqlite3.connect('bank.db')
-    cursor = conn.cursor()
-    
-    cursor.execute('DROP TABLE IF EXISTS accounts')
-    cursor.execute('DROP TABLE IF EXISTS transactions')
-    
-    conn.commit()
-    conn.close()
-    initialize_database()  # Recreate tables
-
 if __name__ == '__main__':
     identity = "Team15"
     zmqThread = NetClient.ZmqClientThread(identity=identity)
