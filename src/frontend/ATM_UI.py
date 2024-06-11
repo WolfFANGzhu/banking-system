@@ -33,7 +33,6 @@ class ATM(QWidget):
             elif response.split("@")[1] == 'B':  # Password error
                 self.password_input.clear()
             return False
-        QTimer.singleShot(500, self.simulateWarningButtonClick)
         self.test_dict["m_message"] = QMessageBox.information(self, "Success", "Account created successfully")
         
         return True
