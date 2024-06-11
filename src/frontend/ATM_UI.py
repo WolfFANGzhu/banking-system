@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QHBoxLayout, QFrame, QGridLayout, QMessageBox, QInputDialog
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt,QTimer
+from PyQt5.QtTest import QTest
 import time
 
 class ATM(QWidget):
@@ -13,6 +14,7 @@ class ATM(QWidget):
         self.zmqThread = zmqThread
         self.main_window = main_window
         self.initUI()
+        self.create_test_dict()
 
     def create_account(self):
         account_id = self.id_input.text()
@@ -24,14 +26,16 @@ class ATM(QWidget):
         response = self.zmqThread.receivedMessage
 
         if response.startswith("error@"):
-            QMessageBox.warning(self, "Error", response.split("@")[2])
+            self.test_dict["m_message"] = QMessageBox.warning(self, "Error", response.split("@")[2])
             if response.split("@")[1] == 'A':  # Account error
                 self.id_input.clear()
                 self.password_input.clear()
             elif response.split("@")[1] == 'B':  # Password error
                 self.password_input.clear()
             return False
-        QMessageBox.information(self, "Success", "Account created successfully")
+        QTimer.singleShot(500, self.simulateWarningButtonClick)
+        self.test_dict["m_message"] = QMessageBox.information(self, "Success", "Account created successfully")
+        
         return True
     
     def insert_card(self):
@@ -44,7 +48,7 @@ class ATM(QWidget):
         response = self.zmqThread.receivedMessage
 
         if response.startswith("error@"):
-            QMessageBox.warning(self, "Error", response.split("@")[2])
+            self.test_dict["m_message"] = QMessageBox.warning(self, "Error", response.split("@")[2])
             if response.split("@")[1] == 'A':  # Account error
                 self.id_input.clear()
                 self.password_input.clear()
@@ -52,7 +56,7 @@ class ATM(QWidget):
                 self.password_input.clear()
             return False
 
-        QMessageBox.information(self, "Success", "Insert card successfully")
+        self.test_dict["m_message"] = QMessageBox.information(self, "Success", "Insert card successfully")
         return True
     
     def insert_card_successful(self):
@@ -70,6 +74,7 @@ class ATM(QWidget):
         if not self.account_info_label:
             self.account_info_label = QLabel(f"Account ID: {self.current_account_id}\nBalance: ${balance:.2f}", self)
             self.layout().addWidget(self.account_info_label)
+            self.test_dict["l_account"] = self.account_info_label
         else:
             self.account_info_label.setText(f"Account ID: {self.current_account_id}\nBalance: ${balance:.2f}")
         self.account_info_label.show()
@@ -93,11 +98,12 @@ class ATM(QWidget):
 
     def change_password(self):
         if self.main_window.whether_processing(self.current_account_id):
-            QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
+            self.test_dict["m_message"] = QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
             return
         while True:
             self.main_window.set_operatoin_status(self.current_account_id, True)
-            new_password, ok = QInputDialog.getText(self, "Change Password", "Enter new password:")
+            self.test_dict['d_dialog'] = QInputDialog(self)
+            new_password, ok = self.test_dict['d_dialog'].getText(self, "Change Password", "Enter new password:")
             if not ok:
                 self.main_window.set_operatoin_status(self.current_account_id, False) 
                 return
@@ -107,10 +113,10 @@ class ATM(QWidget):
             response = self.zmqThread.receivedMessage
 
             if response.startswith("error@"):
-                QMessageBox.warning(self, "Error", response.split("@")[1])
+                self.test_dict["m_message"] = QMessageBox.warning(self, "Error", response.split("@")[1])
                 continue
 
-            QMessageBox.information(self, "Success", "Password changed successfully")
+            self.test_dict["m_message"] = QMessageBox.information(self, "Success", "Password changed successfully")
 
             return_id = int(self.current_account_id)
             self.password_changed.emit(return_id)
@@ -121,16 +127,17 @@ class ATM(QWidget):
 
     def transfer_money(self):
         if self.main_window.whether_processing(self.current_account_id):
-            QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
+            self.test_dict["m_message"] = QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
             return
         while True:
             self.main_window.set_operatoin_status(self.current_account_id, True)
-            receiver_id, ok = QInputDialog.getText(self, "Transfer Money", "Enter receiver's account ID:")
+            self.test_dict['d_dialog'] = QInputDialog(self)
+            receiver_id, ok = self.test_dict['d_dialog'].getText(self, "Transfer Money", "Enter receiver's account ID:")
             if not ok:
                 self.main_window.set_operatoin_status(self.current_account_id, False) 
                 return
-
-            amount, ok = QInputDialog.getDouble(self, "Transfer Money", "Enter amount to transfer:", decimals=2)
+            self.test_dict['d_dialog'] = QInputDialog(self)
+            amount, ok = self.test_dict['d_dialog'].getDouble(self, "Transfer Money", "Enter amount to transfer:", decimals=2)
             if not ok:
                 self.main_window.set_operatoin_status(self.current_account_id, False)
                 return
@@ -140,10 +147,10 @@ class ATM(QWidget):
             response = self.zmqThread.receivedMessage
 
             if response.startswith("error@"):
-                QMessageBox.warning(self, "Error", response.split("@")[1])
+                self.test_dict["m_message"] = QMessageBox.warning(self, "Error", response.split("@")[1])
                 continue
 
-            QMessageBox.information(self, "Success", response.split("@")[1])
+            self.test_dict["m_message"] = QMessageBox.information(self, "Success", response.split("@")[1])
             # Update account info
             return_id = int(self.current_account_id)
             self.balance_changed.emit(return_id)
@@ -157,17 +164,18 @@ class ATM(QWidget):
         self.zmqThread.sendMsg("return_card")
         time.sleep(0.1)  # Wait for backend processing
         response = self.zmqThread.receivedMessage
-        QMessageBox.information(self, "Success", "Card returned successfully")
+        self.test_dict["m_message"] = QMessageBox.information(self, "Success", "Card returned successfully")
         self.current_account_id = None
         self.show_initial_page()
 
     def deposit_cash(self):
         if self.main_window.whether_processing(self.current_account_id):
-            QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
+            self.test_dict["m_message"] = QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
             return
         while True:
             self.main_window.set_operatoin_status(self.current_account_id, True) 
-            amount, ok = QInputDialog.getDouble(self, "Deposit Cash", "Enter amount to deposit:", decimals=2)
+            self.test_dict['d_dialog'] = QInputDialog(self)
+            amount, ok = self.test_dict['d_dialog'].getDouble(self, "Deposit Cash", "Enter amount to deposit:", decimals=2)
             if not ok:
                 self.main_window.set_operatoin_status(self.current_account_id, False) 
                 return
@@ -180,10 +188,10 @@ class ATM(QWidget):
             # print("response info", response.split("@")[0])
             # print("response info", response.split("@")[1])
             if response.startswith("error@"):
-                QMessageBox.warning(self, "Error", response.split("@")[1])
+                self.test_dict["m_message"] = QMessageBox.warning(self, "Error", response.split("@")[1])
                 continue
 
-            QMessageBox.information(self, "Success", response.split("@")[1])
+            self.test_dict["m_message"] = QMessageBox.information(self, "Success", response.split("@")[1])
             # Update account info
             return_id = int(self.current_account_id)
             self.balance_changed.emit(return_id)
@@ -200,14 +208,14 @@ class ATM(QWidget):
         balance = float(response.split("@")[1])
         # Update account info label
         self.account_info_label.setText(f"Account ID: {self.current_account_id}\nBalance: ${balance:.2f}")
-
     def withdraw_cash(self):
         if self.main_window.whether_processing(self.current_account_id):
-            QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
+            self.test_dict["m_message"] = QMessageBox.warning(self, "Error", "Another operation is in progress in APP.")
             return
         while True:
             self.main_window.set_operatoin_status(self.current_account_id, True) 
-            amount, ok = QInputDialog.getDouble(self, "Withdraw Cash", "Enter amount to withdraw:", decimals=2)
+            self.test_dict['d_dialog'] = QInputDialog(self)
+            amount, ok = self.test_dict['d_dialog'].getDouble(self, "Withdraw Cash", "Enter amount to withdraw:", decimals=2)
             if not ok:
                 self.main_window.set_operatoin_status(self.current_account_id, False) 
                 return
@@ -218,10 +226,10 @@ class ATM(QWidget):
             response = self.zmqThread.receivedMessage
 
             if response.startswith("error@"):
-                QMessageBox.warning(self, "Error", response.split("@")[1])
+                self.test_dict["m_message"] = QMessageBox.warning(self, "Error", response.split("@")[1])
                 continue
 
-            QMessageBox.information(self, "Success", response.split("@")[1])
+            self.test_dict["m_message"] = QMessageBox.information(self, "Success", response.split("@")[1])
             # Update account info
             return_id = int(self.current_account_id)
             self.balance_changed.emit(return_id)
@@ -231,7 +239,7 @@ class ATM(QWidget):
        
     def cancel_account(self):
         if self.main_window.whether_logging_in(self.current_account_id):
-            QMessageBox.warning(self, "Error", f"Account {self.current_account_id} is currently logged in from an APP. Cannot cancel account.")
+            self.test_dict["m_message"] = QMessageBox.warning(self, "Error", f"Account {self.current_account_id} is currently logged in from an APP. Cannot cancel account.")
             return
 
         reply = QMessageBox.question(self, 'Confirm', 'Are you sure you want to cancel your account?',
@@ -244,10 +252,10 @@ class ATM(QWidget):
             response = self.zmqThread.receivedMessage
 
             if response.startswith("error@"):
-                QMessageBox.warning(self, "Error", response.split("@")[1])
+                self.test_dict["m_message"] = QMessageBox.warning(self, "Error", response.split("@")[1])
                 return
 
-            QMessageBox.information(self, "Success", "Account canceled successfully")
+            self.test_dict["m_message"] = QMessageBox.information(self, "Success", "Account canceled successfully")
             self.current_account_id = None  # Reset the current account ID
             self.show_initial_page()
 
@@ -283,7 +291,7 @@ class ATM(QWidget):
             self.zmqThread.sendMsg(f"query@{self.current_account_id}")
             time.sleep(0.1)  # 等待后端处理
             response = self.zmqThread.receivedMessage
-            QMessageBox.information(self, "Transaction History", response.split("@")[1])
+            self.test_dict["m_message"] = QMessageBox.information(self, "Transaction History", response.split("@")[1])
 
     def initUI(self):
         self.maxDepositAmount = 50000.00
@@ -445,3 +453,25 @@ class ATM(QWidget):
         elif self.current_mode == 'login':
             if self.insert_card():
                 self.insert_card_successful()
+
+    def create_test_dict(self):
+        self.test_dict = {
+            'b_create': self.create_button,
+            'b_login': self.login_button,
+            'b_confirm': self.confirm_button,
+            'b_back': self.back_button,
+            'b_cancel': self.cancel_button,
+            'b_return': self.return_button,
+            'b_withdraw': self.withdraw_button,
+            'b_deposit': self.deposit_button,
+            'b_change_password': self.change_password_button,
+            'b_transfer': self.transfer_money_button,
+            'b_query': self.query_button,
+            'i_id': self.id_input,
+            'i_password': self.password_input,
+            "l_account":self.account_info_label,
+            'd_dialog':None,
+            'm_message':None
+        }
+    def simulateWarningButtonClick(self):
+        self.test_dict["m_message"] = self.findChild(QMessageBox)
