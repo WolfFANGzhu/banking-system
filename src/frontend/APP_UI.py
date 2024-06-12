@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayout, QHBoxLayout, QFrame, QGridLayout, QMessageBox, QInputDialog
-from PyQt5.QtGui import QCloseEvent, QFont
+from PyQt5.QtGui import QCloseEvent, QFont, QIntValidator
 import time
 from PyQt5.QtCore import pyqtSignal, Qt
 
@@ -27,34 +27,29 @@ class APP(QWidget):
         time.sleep(0.1)  # Wait for backend processing
         response = self.zmqThread.receivedMessage
 
-        if response.startswith("error@"):
-            QMessageBox.warning(self, "Error", response.split("@")[2])
-            if response.split("@")[1] == 'A': ## account error
+        if response.startswith("failed@"):
+            QMessageBox.warning(self, "failed", response.split("@")[2])
+            if response.split("@")[1] == 'A': ## account failed
                 self.id_input.clear()
                 self.password_input.clear()
-            elif response.split("@")[1] == 'B': ## password error
+            elif response.split("@")[1] == 'B': ## password failed
                 self.password_input.clear()
             return False
         
-        if self.main_window.whether_logging_in(account_id):
-            QMessageBox.warning(self, "Error", f"Account {account_id} is already logged in another App.")
-            self.id_input.clear()
-            self.password_input.clear()
-            return False
-        
-        self.main_window.set_log_status(account_id, self.app_id)
+        self.main_window.whether_logging_in(account_id)
+        self.main_window.set_log_status(self, account_id, self.app_id)
         self.logged_in = True
         QMessageBox.information(self, "Success", "Log in successfully")
         return True
     
     def change_password(self):
         if self.main_window.whether_processing(self.current_account_id):
-            QMessageBox.warning(self, "Error", "Another operation is in progress in ATM.")
+            QMessageBox.warning(self, "failed", "Another operation is in progress in ATM.")
             return
         while True:
             self.operationInProgress.emit(self.current_account_id, True)
             self.main_window.set_operatoin_status(self.current_account_id, True)
-            new_password, ok = QInputDialog.getText(self, "Change Password", "Enter new password:")
+            new_password, ok = QInputDialog.getInt(self, "Change Password", "Enter new password (6 digits):", min=0, max=999999)
             if not ok:
                 self.operationInProgress.emit(self.current_account_id, False)
                 self.main_window.set_operatoin_status(self.current_account_id, False)
@@ -65,8 +60,8 @@ class APP(QWidget):
             time.sleep(0.1)  # Wait for backend processing
             response = self.zmqThread.receivedMessage
 
-            if response.startswith("error@"):
-                QMessageBox.warning(self, "Error", response.split("@")[1])
+            if response.startswith("failed@"):
+                QMessageBox.warning(self, "failed", response.split("@")[1])
                 continue
 
             QMessageBox.information(self, "Success", "Password changed successfully")
@@ -79,7 +74,7 @@ class APP(QWidget):
 
     def transfer_money(self):
         if self.main_window.whether_processing(self.current_account_id):
-            QMessageBox.warning(self, "Error", "Another operation is in progress in ATM.")
+            QMessageBox.warning(self, "failed", "Another operation is in progress in ATM.")
             return
         while True:
             self.operationInProgress.emit(self.current_account_id, True)
@@ -100,8 +95,8 @@ class APP(QWidget):
             self.zmqThread.sendMsg(f"transfer_money@{self.current_account_id}@{receiver_id}@{amount}(#{self.app_id})")
             time.sleep(0.1)  # Wait for backend processing
             response = self.zmqThread.receivedMessage
-            if response.startswith("error@"):
-                QMessageBox.warning(self, "Error", response.split("@")[1])
+            if response.startswith("failed@"):
+                QMessageBox.warning(self, "failed", response.split("@")[1])
                 continue
 
             QMessageBox.information(self, "Success", response.split("@")[1])
@@ -119,7 +114,7 @@ class APP(QWidget):
         self.zmqThread.sendMsg(f"log_out#{self.app_id}")
         time.sleep(0.1)  # Wait for backend processing
         response = self.zmqThread.receivedMessage
-        self.main_window.set_log_status(self.current_account_id, None)
+        self.main_window.set_log_status(self, self.current_account_id, None)
         QMessageBox.information(self, "Success", "Logged out successfully")
         self.current_account_id = None
         self.logged_in = False
@@ -179,10 +174,15 @@ class APP(QWidget):
 
         self.id_input = QLineEdit(self)
         self.id_input.setPlaceholderText('Account ID')
+        validator = QIntValidator(0, 9999999999, self)  # Allows only 10 digit numbers
+        self.id_input.setValidator(validator)
         self.id_input.hide()
 
         self.password_input = QLineEdit(self)
         self.password_input.setPlaceholderText('Password')
+        self.password_input.setEchoMode(QLineEdit.Password)
+        validator = QIntValidator(0, 999999, self)  # Allows only 6 digit numbers
+        self.password_input.setValidator(validator)
         self.password_input.hide()
 
         self.confirm_button = QPushButton('Confirm', self)
@@ -311,7 +311,7 @@ class APP(QWidget):
     def closeEvent(self, event):
         self.closed.emit(self.app_id)
         if self.current_account_id is not None:
-            self.main_window.set_log_status(self.current_account_id, None)
+            self.main_window.set_log_status(self, self.current_account_id, None)
         event.accept()  # Let the window close
 
 
