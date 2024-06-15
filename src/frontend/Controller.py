@@ -85,32 +85,19 @@ class Controller(QMainWindow):
         self.setGeometry(300, 300, 400, 400)
 
     def open_app(self):
-        dialog = QInputDialog(self)
-        dialog.setInputMode(QInputDialog.IntInput)
-        dialog.setWindowTitle('Open App')
-        dialog.setLabelText('Enter app ID:')
-        dialog.setIntRange(1, 99)  # Set range for the input
-        dialog.setIntValue(1)  # Set default value
-        self.test_dict["d_dialog"]=dialog
-        ok = dialog.exec_()
-        if ok:
-            app_id = str(dialog.intValue())
-            if app_id in self.app_instances:
-                QMessageBox.warning(self, "Error", "App with specified ID is already open.")
-                return
-            
-            self.num_apps_opened += 1
-            new_app = APP_UI.APP(self.zmqThread, int(app_id), self)  # Pass as integer to APP
-            self.connect_signals(new_app)
-            new_app.show()
-            self.app_instances[app_id] = new_app
+        self.num_apps_opened += 1
+        appid = self.num_apps_opened
+        new_app = APP_UI.APP(self.zmqThread, int(appid), self)  # Pass as integer to APP
+        self.connect_signals(new_app)
+        new_app.show()
+        self.app_instances[str(appid)] = new_app
 
     def close_app(self):
         dialog = QInputDialog(self)
         dialog.setInputMode(QInputDialog.IntInput)
         dialog.setWindowTitle('Close App')
         dialog.setLabelText('Enter app ID:')
-        dialog.setIntRange(1, 99)  # Set range for the input
+        # dialog.setIntRange(1, 99)  # Set range for the input
         dialog.setIntValue(1)  # Set default value
         self.test_dict["d_dialog"]=dialog 
         
@@ -118,7 +105,11 @@ class Controller(QMainWindow):
         if ok:
             app_id = str(dialog.intValue())
             if app_id in self.app_instances:
-                self.app_instances[app_id].close()
+                app_instance = self.app_instances[app_id]
+                if app_instance.logged_in == False:
+                    app_instance.close()
+                else:
+                    QMessageBox.warning(self, "Warning", "Please log out before closing the app.")
             else:
                 QMessageBox.warning(self, "Error", "App with specified ID is not open.")
 
@@ -128,10 +119,11 @@ class Controller(QMainWindow):
         app_instance.password_changed.connect(self.handle_password_changed_app)
         app_instance.balance_changed.connect(self.handle_balance_changed_app)
         app_instance.transfer_changed.connect(self.handle_transfer_changed_app)
+        app_instance.same_transfer_changed.connect(self.handle_transfer_same_in_app)
 
     def handle_app_closed(self, app_id):
         del self.app_instances[str(app_id)]
-        self.num_apps_opened -= 1
+        # self.num_apps_opened -= 1
     
     def whether_logging_in(self, account_id):
         if self.logging_in_accounts.get(account_id) is not None:
@@ -181,6 +173,11 @@ class Controller(QMainWindow):
         if self.atm.current_account_id is not None and int(self.atm.current_account_id) == account_id:
             self.atm.update_account_info()
 
+    def handle_transfer_same_in_app(self, account_id):
+        for app_id, app_instance in self.app_instances.items():
+            if app_instance.logged_in and (int(app_instance.current_account_id) == account_id):
+                app_instance.update_account_info()
+
     def reset(self):
         confirmation = QMessageBox.question(self, 'Reset Database', 'Are you sure you want to reset the database?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if confirmation == QMessageBox.Yes:
@@ -189,7 +186,7 @@ class Controller(QMainWindow):
     
     def create_test_dict(self):
         self.test_dict={
-        "b_open":self.openAppButton,
+        # "b_open":self.openAppButton,
         "b_close":self.closeAppButton,
         "b_reset":self.resetButton,
         "d_dialog":None,

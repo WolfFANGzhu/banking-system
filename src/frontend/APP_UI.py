@@ -10,6 +10,7 @@ class APP(QWidget):
     password_changed = pyqtSignal(int)
     balance_changed = pyqtSignal(int)
     transfer_changed = pyqtSignal(int)
+    same_transfer_changed = pyqtSignal(int)
     def __init__(self, zmqThread, app_id, main_window):
         super().__init__()
         self.zmqThread = zmqThread
@@ -108,6 +109,7 @@ class APP(QWidget):
             self.balance_changed.emit(return_id)
             self.operationInProgress.emit(self.current_account_id, False)
             self.transfer_changed.emit(int(receiver_id))
+            self.same_transfer_changed.emit(int(receiver_id))
             self.update_account_info()
             self.main_window.set_operatoin_status(self.current_account_id, False)
             break
@@ -162,6 +164,7 @@ class APP(QWidget):
             time.sleep(0.1)  # Wait for backend processing
             response = self.zmqThread.receivedMessage
             QMessageBox.information(self, "Transaction History", response.split("@")[1])
+            self.update_account_info()
 
     def initUI(self):
         self.maxDepositAmount = 50000.00
@@ -203,6 +206,9 @@ class APP(QWidget):
         self.query_button.clicked.connect(self.query)
         self.query_button.hide()
 
+        self.close_button = QPushButton('Close', self)
+        self.close_button.clicked.connect(self.close_app)
+
         self.return_button = QPushButton('Log Out', self)
         self.change_password_button = QPushButton('Change Password', self)
         self.transfer_money_button = QPushButton('Transfer Money', self)
@@ -228,7 +234,7 @@ class APP(QWidget):
         self.change_password_button.setFont(font)
         self.transfer_money_button.setFont(font)
         self.query_button.setFont(font)
-
+        self.close_button.setFont(font)
         # Main layout
         main_layout = QVBoxLayout()
         
@@ -236,7 +242,7 @@ class APP(QWidget):
         title_layout = QVBoxLayout()
         title_layout.addWidget(self.label, alignment=Qt.AlignCenter)
         title_layout.addWidget(self.subtitle_label, alignment=Qt.AlignCenter)
-
+        title_layout.addWidget(self.close_button, alignment=Qt.AlignCenter)
         title_frame = QFrame(self)
         title_frame.setLayout(title_layout)
         title_frame.setFrameShape(QFrame.Box)
@@ -314,11 +320,19 @@ class APP(QWidget):
             if self.log_in():
                 self.log_in_successful()
     
-    def closeEvent(self, event):
+    # def closeEvent(self, event):
+    #     self.closed.emit(self.app_id)
+    #     if self.current_account_id is not None:
+    #         self.main_window.set_log_status(self, self.current_account_id, None)
+    #     event.accept()  # Let the window close
+
+    def close_app(self):
+        if self.logged_in:
+            QMessageBox.warning(self, "Warning", "Please log out before closing the app.")
+            return
+        self.main_window.set_log_status(self, self.current_account_id, None)
         self.closed.emit(self.app_id)
-        if self.current_account_id is not None:
-            self.main_window.set_log_status(self, self.current_account_id, None)
-        event.accept()  # Let the window close
+        self.close()
 
     def create_test_dict(self):
 
@@ -335,5 +349,6 @@ class APP(QWidget):
             "b_return":self.return_button,
             "b_change_password":self.change_password_button,
             "b_transfer":self.transfer_money_button,
+            "b_close":self.close_button,
             "d_dialog": None
         }
