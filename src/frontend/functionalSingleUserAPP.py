@@ -140,10 +140,31 @@ class TestSingleUserAppAndATM(unittest.TestCase):
         QTest.mouseClick(self.mainWindow.app_instances["2"].test_dict["b_confirm"], Qt.LeftButton)
         self.assertEqual(self.msgBoxText,"Log in successfully")
     def test_007_changePassword(self):
-        pass
-
-
-
+        # Wait for 2s for the dialog box to appear
+        QTimer.singleShot(2000, lambda: self.simulateInputDialog(self.mainWindow.app_instances["2"].test_dict["d_dialog"], "000666"))
+        # Wait for 3s for the message box on app to appear
+        QTimer.singleShot(3000, lambda: self.simulateClickMessage(self.mainWindow.app_instances["2"]))
+        # Wait for 4s to verify the message Box
+        QTimer.singleShot(4000, lambda: self.assertEqual(self.msgBoxText, "Password changed successfully"))
+        # Wait for 5s for another message box on atm
+        QTimer.singleShot(5000, lambda: self.simulateClickMessage(self.mainWindow.atm))
+        # Wait for 6s to verify the other message Box
+        QTimer.singleShot(6000, lambda: self.assertEqual(self.msgBoxText, "Card returned successfully"))
+        # Wait for 7s for another message box on 
+        QTimer.singleShot(7000, lambda: self.simulateClickMessage(self.mainWindow.app_instances["2"]))
+         # Wait for 8s to verify the other message Box
+        QTimer.singleShot(8000, lambda: self.assertEqual(self.msgBoxText, "Logged out successfully"))
+        # Click change password button
+        QTest.mouseClick(self.mainWindow.app_instances["2"].test_dict["b_change_password"], Qt.LeftButton)
+    def test_008_logInUsingNewPassword(self):
+        QTest.mouseClick(self.mainWindow.app_instances["2"].test_dict["b_login"], Qt.LeftButton)
+        QTest.qWait(1000)
+        QTest.keyClicks(self.mainWindow.app_instances["2"].test_dict["i_id"], "2024123456")
+        QTest.keyClicks(self.mainWindow.app_instances["2"].test_dict["i_password"], "000666")
+        QTest.qWait(1000)
+        QTimer.singleShot(1000, lambda: self.simulateClickMessage(self.mainWindow.app_instances["2"]))
+        QTest.mouseClick(self.mainWindow.app_instances["2"].test_dict["b_confirm"], Qt.LeftButton)
+        self.assertEqual(self.msgBoxText,"Log in successfully")
         
 
 if __name__ == "__main__":
