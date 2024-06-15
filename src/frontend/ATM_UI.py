@@ -100,7 +100,7 @@ class ATM(QWidget):
         while True:
             self.main_window.set_operatoin_status(self.current_account_id, True)
             self.test_dict['d_dialog'] = QInputDialog(self)
-            new_password, ok = self.test_dict['d_dialog'].getInt(self, "Change Password", "Enter new password (6 digits):", min=0, max=999999)
+            new_password, ok = self.test_dict['d_dialog'].getText(self, "Change Password", "Enter new password (6 digits):")
             if not ok:
                 self.main_window.set_operatoin_status(self.current_account_id, False) 
                 return
@@ -318,7 +318,8 @@ class ATM(QWidget):
         self.password_input = QLineEdit(self)
         self.password_input.setPlaceholderText('Password')
         self.password_input.setEchoMode(QLineEdit.Password)
-        validator = QIntValidator(0, 999999, self)  # Allows only 6 digit numbers
+        reg_exp = QRegularExpression(r'^\d{1,6}$')  # Allows only up to 6 digit numbers
+        validator = QRegularExpressionValidator(reg_exp, self.password_input)
         self.password_input.setValidator(validator)
         self.password_input.hide()
 
