@@ -44,8 +44,8 @@ class TestSingleUserATM(unittest.TestCase):
         # Ensure the event loop runs long enough to display the window
         QTest.qWait(1000)  # Delay 1 second to ensure the window is displayed
         print("[Test finished]")
-        cls.mainWindow.atm.close()
-        cls.mainWindow.close()
+        pass
+
 
     def test_001_create_account_common(self):
         # Click create account button
