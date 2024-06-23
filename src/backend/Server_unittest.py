@@ -243,12 +243,47 @@ class TestZmqServerThread(unittest.TestCase):
         self.zmq_server.send_string = MagicMock()
         self.zmq_server.process_request(address, message)
         self.zmq_server.send_string.assert_called_with(address, "balance@15000.0")
-    def test_023_process_request_query(self):
+    def test_032_process_request_query(self):
         address = "client1"
-        message = "query@2024888888"
+        message = "query@2024000000"
         self.zmq_server.send_string = MagicMock()
         self.zmq_server.process_request(address, message)
-    
+    def test_033_account_exists(self):
+        self.assertTrue(self.zmq_server.account_exists("2024000000"))
+        self.assertFalse(self.zmq_server.account_exists("2024000001"))
+    def test_034_verfiy_password(self):
+        self.assertTrue(self.zmq_server.verify_password("2024000000", "000000"))
+        self.assertFalse(self.zmq_server.verify_password("2024000000", "000001"))
+    def test_035_get_balance(self):
+        self.assertEqual(self.zmq_server.get_balance("2024000000"), 15000.0)
+    def test_036_has_sufficient_balance(self):
+        self.assertTrue(self.zmq_server.has_sufficient_balance("2024000000", 10000.0))
+        self.assertFalse(self.zmq_server.has_sufficient_balance("2024000000", 20000.0))
+    def test_037_deposit_cash(self):
+        self.zmq_server.deposit_cash("2024000000", 5000.0)
+        self.assertEqual(self.zmq_server.get_balance("2024000000"), 20000.0)
+    def test_038_get_password(self):
+        self.assertEqual(self.zmq_server.get_password("2024000000"), "000000")
+    def test_039_change_password(self):
+        self.zmq_server.change_password("2024000000", "123456")
+        self.assertTrue(self.zmq_server.verify_password("2024000000", "123456"))
+    def test_040_create_account(self):
+        self.assertFalse(self.zmq_server.account_exists("2024888889"))
+        self.zmq_server.create_account("2024888889", "000000")
+        self.assertTrue(self.zmq_server.account_exists("2024888889"))
+    def test_041_transfer_money(self):
+        self.zmq_server.transfer_money("2024000000", "2024888889", 5000.0)
+        self.assertEqual(self.zmq_server.get_balance("2024000000"), 15000.0)
+        self.assertEqual(self.zmq_server.get_balance("2024888889"), 5000.0)
+    def test_042_withdraw_cash(self):
+        self.zmq_server.withdraw_cash("2024000000", 5000.0)
+        self.assertEqual(self.zmq_server.get_balance("2024000000"), 10000.0)
+    def test_043_cancel_account(self):
+        self.zmq_server.transfer_money("2024888889","2024000000", 5000.0)
+        self.zmq_server.cancel_account("2024888889")
+        self.assertFalse(self.zmq_server.account_exists("2024888889"))
+    def test_044_query(self):
+        self.zmq_server.query_account("2024000000")
 
 if __name__ == "__main__":
     unittest.main()
