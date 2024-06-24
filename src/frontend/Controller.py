@@ -189,6 +189,7 @@ class Controller(QMainWindow):
         # "b_open":self.openAppButton,
         "b_close":self.closeAppButton,
         "b_reset":self.resetButton,
+        "b_open":self.openAppButton,
         "d_dialog":None,
         }
     
