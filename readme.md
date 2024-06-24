@@ -22,5 +22,33 @@ Also, we provide a script file to run both of them. You can execute `python run.
   For this part, you can refer to the requirement and user manual document to learn about details.
   For our implementation, we only allow click in the UI, but can not go on api testing because of our framework building
 
-## 5. Banking system initial assumption
-Assume that there is an account in the initial database,  and the account id is 2023123456, password is 123456, with 500 Yuan deposit in it.
+### Running Unit Tests
+
+To run unit tests, use the following command:
+
+```bash
+# e.g for the `controller` module
+python -m src.test.unittest_controller
+```
+```bash
+# e.g for the `server` module
+python -m src.test.unittest_server
+```
+
+
+### Running Functional Tests
+
+To run functional tests, edit src/test/run_functionalTest.py at 10th line
+```python
+# Copy the following test you want to run
+#   functionalTestATM.py
+#   functionalTestApp.py
+#   functionalTestMultipleUser.py
+test_script = os.path.abspath(os.path.join(os.path.dirname(__file__), 'functionalTestMultipleUser.py'))
+
+```
+And then run
+```bash
+# e.g for the functionalTest
+python -m src.test.run_functionalTest
+```
