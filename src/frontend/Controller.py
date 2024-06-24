@@ -3,9 +3,9 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtGui import QFont
 import sys
 import os
-import APP_UI
-import NetClient
-import ATM_UI
+from . import APP_UI
+from . import NetClient
+from . import ATM_UI
 import sqlite3
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.bank import reset_database
