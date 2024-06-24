@@ -1,6 +1,6 @@
-# WeeklyReport_Week10
+# WeeklyReport_Week 9 & 10
 
-![photo](../Requirement/class_diagram.png)
+![photo](../Others/class_diagram.png)
 
 ## Tasks Completed:
 

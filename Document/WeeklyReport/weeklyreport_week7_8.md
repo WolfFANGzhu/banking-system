@@ -1,4 +1,4 @@
-# WeeklyReport_Week7
+# WeeklyReport_Week 7 & 8
 
 ## Work Done This Week
 

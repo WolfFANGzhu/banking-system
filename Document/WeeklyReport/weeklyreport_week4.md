@@ -2,11 +2,11 @@
 
 ## Use case diagram
 
-![photo](../Requirement/BankSysUseCase.png)
+![photo](../Others/BankSysUseCase.png)
 
 ## Basic requirement 
 
-Draft a basic requirement at [README.md](../Requirement/README.md)
+Draft a basic requirement at [README.md](../Others/basic_describe.md)
 
 ## Goal for next week
 
