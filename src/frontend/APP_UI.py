@@ -297,6 +297,7 @@ class APP(QWidget):
         balance = float(response.split("@")[1])
         if not self.account_info_label:
             self.account_info_label = QLabel(f"Account ID: {self.current_account_id}\nBalance: ${balance:.2f}", self)
+            self.test_dict["l_account"] = self.account_info_label
             self.layout().addWidget(self.account_info_label)
         else:
             self.account_info_label.setText(f"Account ID: {self.current_account_id}\nBalance: ${balance:.2f}")
