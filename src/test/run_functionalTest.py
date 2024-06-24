@@ -11,7 +11,7 @@ backend_script = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../
 #   functionalTestATM.py
 #   functionalTestApp.py
 #   functionalTestMultipleUser.py
-test_script = os.path.abspath(os.path.join(os.path.dirname(__file__), 'functionalTestApp.py'))
+test_script = os.path.abspath(os.path.join(os.path.dirname(__file__), 'functionalTestMultipleUser.py'))
 
 def run_backend():
     # 启动 backend 脚本

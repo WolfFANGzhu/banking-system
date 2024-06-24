@@ -195,30 +195,48 @@ class TestZmqServerThread(unittest.TestCase):
         self.zmq_server.send_string = MagicMock()
         self.zmq_server.process_request(address, message)
         self.zmq_server.send_string.assert_called_with(address, "failed@Invalid receiver account ID")
-    def test_023_process_request_transfer_money_invalidAmount1(self):
+    def test_023_1_process_request_transfer_money_invalidAmount1(self):
         address = "client1"
         message = "transfer_money@2024888888#2024000000#50000.01"
         self.zmq_server.send_string = MagicMock()
         self.zmq_server.process_request(address, message)
         self.zmq_server.send_string.assert_called_with(address, "failed@Transfer amount must be between $0.01 and $50000.00")
-    def test_024_process_request_transfer_money_invalidAmount2(self):
+    def test_023_2_process_request_transfer_money_invalidAmount2(self):
         address = "client1"
         message = "transfer_money@2024888888#2024000000#-78.90"
         self.zmq_server.send_string = MagicMock()
         self.zmq_server.process_request(address, message)
         self.zmq_server.send_string.assert_called_with(address, "failed@Transfer amount must be between $0.01 and $50000.00")
+    def test_024_1_process_request_transfer_money_toitself(self):
+        address = "client1"
+        message = "transfer_money@2024888888#2024888888#5000"
+        self.zmq_server.send_string = MagicMock()
+        self.zmq_server.process_request(address, message)
+        self.zmq_server.send_string.assert_called_with(address, "failed@Can't tranfer to your own")
+    def test_024_2_process_request_transfer_money_accountIdLessThan10(self):
+        address = "client1"
+        message = "transfer_money@2024888888#2024#5000"
+        self.zmq_server.send_string = MagicMock()
+        self.zmq_server.process_request(address, message)
+        self.zmq_server.send_string.assert_called_with(address, "failed@Receiver's account ID must consist of 10 digits")
+    def test_024_3_process_request_transfer_money_notSufficientBalance(self):
+        address = "client1"
+        message = "transfer_money@2024888888#2024000000#40000.0"
+        self.zmq_server.send_string = MagicMock()
+        self.zmq_server.process_request(address, message)
+        self.zmq_server.send_string.assert_called_with(address, "failed@Insufficient account balance for transfer")
     def test_025_process_request_withdraw_cash_success(self):
         address = "client1"
         message = "withdraw_cash@2024888888#5200"
         self.zmq_server.send_string = MagicMock()
         self.zmq_server.process_request(address, message)
         self.zmq_server.send_string.assert_called_with(address, "success@$5200.00 withdrawn successfully. Balance: 5200.0 -> 0.0")
-    def test_027_process_request_withdraw_cash_invalidAmount1(self):
+    def test_027_process_request_withdraw_cash_insufficientBalance(self):
         address = "client1"
-        message = "withdraw_cash@2024888888#50000.01"
+        message = "withdraw_cash@2024888888#50000"
         self.zmq_server.send_string = MagicMock()
         self.zmq_server.process_request(address, message)
-        self.zmq_server.send_string.assert_called_with(address, "failed@Withdrawal amount must be between $0.01 and $50000.00")
+        self.zmq_server.send_string.assert_called_with(address, "failed@Insufficient account balance for withdrawal")
     def test_028_process_request_withdraw_cash_invalidAmount2(self):
         address = "client1"
         message = "withdraw_cash@2024888888#-78.90"
